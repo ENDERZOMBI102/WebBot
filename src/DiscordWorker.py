@@ -1,3 +1,4 @@
+import asyncio
 from asyncio import AbstractEventLoop
 from os import getenv
 from queue import Queue
@@ -17,8 +18,12 @@ class DiscordWorker(Client):
 	_loop: AbstractEventLoop = None
 
 	def __init__(self):
-		super(DiscordWorker, self).__init__()
-		DiscordWorker._loop = self.loop
+		loop = asyncio.new_event_loop()
+		asyncio.set_event_loop(loop)
+		super(DiscordWorker, self).__init__(
+			loop=loop
+		)
+		DiscordWorker._loop = loop
 
 	async def on_ready(self):
 		logger.info( f'Logged on as {self.user}!' )

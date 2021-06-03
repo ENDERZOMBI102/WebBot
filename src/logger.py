@@ -9,6 +9,7 @@ import logging
 import os
 import sys
 import traceback
+from pathlib import Path
 from types import TracebackType
 from typing import Dict, Tuple, Union, Type, Callable, Any
 
@@ -146,19 +147,24 @@ def get_handler(filename: str) -> logging.FileHandler:
     try:
         # Remove the oldest one.
         try:
-            os.remove(name + suffixes[0] + ext)
+            os.remove( name + suffixes[0] + ext )
         except FileNotFoundError:
             pass
 
         # Go in reverse, moving each file over to give us space.
-        for frm, to in zip(suffixes[1:], suffixes):
+        for frm, to in zip( suffixes[1:], suffixes ):
             try:
-                os.rename(name + frm + ext, name + to + ext)
+                os.rename( name + frm + ext, name + to + ext )
             except FileNotFoundError:
                 pass
 
+        if Path(filename).exists():
+            path1 = Path( f'{name}.1{ext}' )
+            path1.touch( exist_ok=True )
+            path1.write_text( Path(filename).read_text() )
+
         try:
-            return logging.FileHandler(filename, mode='x')
+            return logging.FileHandler(filename, mode='w')
         except FileExistsError:
             pass
     except PermissionError:
@@ -196,12 +202,12 @@ class NullStream(io.IOBase):
 
 
 def init_logging(
-    filename: str=None,
-    main_logger: str='',
+    filename: str = None,
+    main_logger: str = '',
     on_error: Callable[
         [Type[BaseException], BaseException, TracebackType],
         None,
-    ]=None,
+    ] = None,
 ) -> logging.Logger:
     """Setup the logger and logging handlers.
 
@@ -245,22 +251,13 @@ def init_logging(
 
     if filename is not None:
         # Make the directories the logs are in, if needed.
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        os.makedirs( os.path.dirname(filename), exist_ok=True )
 
         # The log contains DEBUG and above logs.
         log_handler = get_handler(filename)
         log_handler.setLevel(logging.DEBUG)
         log_handler.setFormatter(long_log_format)
         logger.addHandler(log_handler)
-
-        name, ext = os.path.splitext(filename)
-
-        # The .error log has copies of WARNING and above.
-        err_log_handler = get_handler(name + '.error' + ext)
-        err_log_handler.setLevel(logging.WARNING)
-        err_log_handler.setFormatter(long_log_format)
-
-        logger.addHandler(err_log_handler)
 
     if sys.stdout:
         stdout_loghandler = logging.StreamHandler(sys.stdout)
@@ -327,7 +324,7 @@ def init_logging(
         return LoggerAdapter(logger)
 
 
-def get_logger(name: str='', alias: str=None) -> logging.Logger:
+def get_logger(name: str = '', alias: str = None) -> logging.Logger:
     """Get the named logger object.
 
     This puts the logger into the srctools namespace, and wraps it to
@@ -335,6 +332,6 @@ def get_logger(name: str='', alias: str=None) -> logging.Logger:
     If set, alias is the name to show for the module.
     """
     if name:
-        return LoggerAdapter(logging.getLogger('srctools.' + name), alias)
+        return LoggerAdapter( logging.getLogger('srctools.' + name), alias )
     else:  # Allow retrieving the main logger.
-        return LoggerAdapter(logging.getLogger('srctools'), alias)
+        return LoggerAdapter( logging.getLogger('srctools'), alias )
