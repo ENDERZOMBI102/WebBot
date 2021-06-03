@@ -1,9 +1,6 @@
-from os import environ
-
-from logger import init_logging, get_logger, logging
-
 import uvicorn
 
+from logger import init_logging, get_logger, logging
 from DiscordWorker import DiscordWorker
 
 
