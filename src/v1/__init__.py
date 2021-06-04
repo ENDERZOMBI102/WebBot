@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
+from . import messages, members
 
-v1APIRouter = APIRouter()
+router = APIRouter(
+	prefix="/v1"
+)
 
-
-@v1APIRouter.get('')
-async def getMessages():
-	pass
-
+router.include_router( messages.router )
+router.include_router( members.router )

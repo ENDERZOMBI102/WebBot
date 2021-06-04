@@ -8,6 +8,7 @@ init_logging(
 	filename='./logs/latest.log'
 )
 logger = get_logger( 'WebBot' )
+logging.getLogger('discord').setLevel(logging.INFO)
 
 
 logger.info( 'Starting!' )
