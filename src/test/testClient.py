@@ -1,11 +1,9 @@
 import time
-from typing import Union
 
-import requests
+from requests import post, get
 
 
 prefix = '!'
-Message = dict[str, Union[str, int] ]
 
 
 def getUrl(path) -> str:
@@ -13,28 +11,40 @@ def getUrl(path) -> str:
 
 
 def sendMessage(message: str, channel: int) -> None:
-	requests.post( getUrl(f'message?content={message}&channel={channel}') )
+	print(f'"{message}" -> {channel}')
+	post( getUrl(f'messages?content={message}&channel={channel}') )
 
 
 def handleMessage(content: str, identifier: int, author: int, channel: int, guild: int) -> None:
 	if not content.startswith(prefix):
 		return
 	content = content.removeprefix(prefix)
+	print(f'{guild}:{channel} -> "{content}"')
 
 	if content == 'helo':
 		sendMessage( 'Hello there!', channel )
+	elif content.startswith('getmsg'):
+		sendMessage(
+			get(
+				getUrl(f'messages/{content.removeprefix("getmsg ")}?channel={channel}')
+			).json()['content'],
+			channel
+		)
+	elif content.startswith('getusr'):
+		sendMessage(
+			get(
+				getUrl(f'users/{content.removeprefix("getusr ")}')
+			).text,
+			channel
+		)
 	else:
 		sendMessage( 'Unknown command!', channel )
 
 
 while True:
-	time.sleep(2)
-	obj: list[ Message ] = requests.get( getUrl('messages') ).json()
-	for msg in obj:
-		handleMessage(
-			content=msg[ 'content' ],
-			identifier=msg[ 'identifier' ],
-			author=msg[ 'author' ],
-			channel=msg[ 'channel' ],
-			guild=msg[ 'guild' ]
-		)
+	time.sleep(1)
+	try:
+		for msg in get( getUrl('messages') ).json():
+			handleMessage(**msg)
+	except ConnectionError:
+		pass
