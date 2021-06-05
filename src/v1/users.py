@@ -1,6 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from DataClasses import User
+from DiscordWorker import DiscordWorker
 
 router = APIRouter(
 	prefix='/users',
@@ -17,3 +18,12 @@ async def get_user(identifier: int) -> User:
 	:param identifier:
 	:return:
 	"""
+	future = DiscordWorker.runCoroutine(
+		DiscordWorker.getInstance().getUser( identifier )
+	)
+	await future
+
+	if future.result():
+		return future.result()
+	raise HTTPException( future.result().code, future.result().message )
+
