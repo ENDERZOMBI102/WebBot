@@ -1,0 +1,114 @@
+#%RAML 1.0
+---
+title: WebBot API
+version: v1
+baseUri: http://localhost/api/{version}
+
+/messages:
+  get:
+    description: Get all messages in the message queue and consume them
+    responses:
+      200:
+        body:
+          application/json:
+            example: |
+              [
+                {
+                  "identifier": 0123456789,
+                  "content": "hello world!",
+                  "author": 0123456789,
+                  "channel": 0123456789,
+                  "guild": 0123456789
+                }
+              ]
+
+  post:
+    description: Send a message with specified content in a channel
+    queryParameters:
+      content:
+        displayName: Content
+        type: string
+        description: Message's content
+        example: hello world!
+      channel:
+        displayName: Channel id
+        type: integer
+        description: Channel id to post the message into
+        example: 1839353733
+    responses:
+      200:
+        body:
+          plain/text:
+            example: 9
+            type: integer
+  /preview:
+    get:
+      description: Get the incoming message queue without consuming any message
+      responses:
+      200:
+        body:
+          application/json:
+            example: |
+              [
+                {
+                  "identifier": 0123456789,
+                  "content": "hello world!",
+                  "author": 0123456789,
+                  "channel": 0123456789,
+                  "guild": 0123456789
+                }
+              ]
+  /{identfier}:
+    get:
+      description: Get a message by its identifier and channel
+      queryParameters:
+        identifier:
+          displayName: Message id
+          type: integer
+          description: Message id to get
+          example: 83738474637
+        channel:
+          displayName: Channel id
+          type: integer
+          description: Id of the channel to search into 
+          example: 837374647333
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                    "identifier": 0123456789,
+                    "content": "hello world!",
+                    "author": 0123456789,
+                    "channel": 0123456789,
+                    "guild": 0123456789
+                }
+        404:
+          body:
+            application/json:
+              example: |
+                {
+                  "error": "text"
+                }
+/users:
+  /{identifier}:
+    get:
+      description: Get an user by its identifier
+      queryParameters:
+        identifier:
+          displayName: User id
+          type: integer
+          description: The user's id
+          example: 9383839473928
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "identifier": 192763836,
+                  "username": "CoolName21",
+                  "discriminator": 2345,
+                  "is_bot": false
+                }
